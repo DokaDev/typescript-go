@@ -14978,14 +14978,14 @@ func (c *Checker) resolveESModuleSymbol(moduleSymbol *ast.Symbol, referencingLoc
 				return exportModuleDotExportsSymbol
 			}
 
-			isEsmCjsRef := targetFile != nil && usageMode == core.ModuleKindESNext && c.program.GetImpliedNodeFormatForEmit(targetFile.AsSourceFile()) == core.ModuleKindCommonJS
+			isEsmCjsRef := targetFile != nil && isESMFormatImportImportingCommonjsFormatFile(usageMode, c.program.GetImpliedNodeFormatForEmit(targetFile.AsSourceFile()))
 			if c.compilerOptions.GetESModuleInterop() || isEsmCjsRef {
 				if c.hasSignatures(typ) || c.getPropertyOfTypeEx(typ, ast.InternalSymbolNameDefault, true /*skipObjectFunctionPropertyAugment*/, false /*includeTypeOnlyMembers*/) != nil || isEsmCjsRef {
 					var moduleType *Type
 					if typ.Flags()&TypeFlagsStructuredType != 0 {
 						moduleType = c.getTypeWithSyntheticDefaultImportType(typ, symbol, moduleSymbol, reference)
 					} else {
-						moduleType = c.createDefaultPropertyWrapperForModule(symbol, moduleSymbol, nil)
+						moduleType = c.createDefaultPropertyWrapperForModule(symbol, symbol.Parent, nil)
 					}
 					return c.cloneTypeAsModuleType(symbol, moduleType, referenceParent)
 				}
@@ -14997,6 +14997,10 @@ func (c *Checker) resolveESModuleSymbol(moduleSymbol *ast.Symbol, referencingLoc
 
 func (c *Checker) hasSignatures(t *Type) bool {
 	return len(c.getSignaturesOfStructuredType(t, SignatureKindCall)) > 0 || len(c.getSignaturesOfStructuredType(t, SignatureKindConstruct)) > 0
+}
+
+func isESMFormatImportImportingCommonjsFormatFile(usageMode core.ResolutionMode, targetMode core.ResolutionMode) bool {
+	return usageMode == core.ModuleKindESNext && targetMode == core.ModuleKindCommonJS
 }
 
 func (c *Checker) getTypeWithSyntheticDefaultOnly(t *Type, symbol *ast.Symbol, originalSymbol *ast.Symbol, moduleSpecifier *ast.Node) *Type {

@@ -276,6 +276,7 @@ func (options *CompilerOptions) GetResolveJsonModule() bool {
 		return options.ResolveJsonModule == TSTrue
 	}
 	switch options.GetEmitModuleKind() {
+	// TODO in 6.0: add Node16/Node18
 	case ModuleKindNode20, ModuleKindESNext:
 		return true
 	}
